@@ -139,7 +139,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - <<: notify_channel_for_error
+      - <<: *notify_channel_for_error
 
   # deploy-infrastructure:
   #   docker:
