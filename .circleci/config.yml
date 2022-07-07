@@ -7,13 +7,13 @@ os_default: &os_default
   docker:
     - image: circleci/node:13.8.0
 
-commands:
-  notify-channel-for-error:
-    slack/notify:
-      channel: C03DAJYL3SM
-      event: fail
-      template: basic_fail_1
+notify_channel_for_error: &notify_channel_for_error
+  slack/notify:
+    channel: C03DAJYL3SM
+    event: fail
+    template: basic_fail_1
 
+commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -139,7 +139,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - notify-channel-for-error
+      - <<: notify_channel_for_error
 
   # deploy-infrastructure:
   #   docker:
