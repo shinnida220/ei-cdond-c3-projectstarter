@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  slack: circleci/slack@4.10.1
+
 os_default: &os_default
   docker:
     - image: circleci/node:13.8.0
@@ -115,6 +118,7 @@ jobs:
 
   scan-backend:
     <<: *os_default
+    context: buildbot-for-cicd-project
     steps:
       - checkout
       - restore_cache:
@@ -130,6 +134,10 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
+      - slack/notify:
+          channel: C03DAJYL3SM
+          event: fail
+          template: basic_fail_1
 
   # deploy-infrastructure:
   #   docker:
