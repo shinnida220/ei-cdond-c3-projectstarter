@@ -11,6 +11,10 @@ os_aws_image: &os_aws_image
   docker:
     - image: amazon/aws-cli
 
+os_ansible_supported: &os_ansible_supported
+  docker:
+    - image: python:3.7-alpine3.11
+
 notify_channel_for_error: &notify_channel_for_error
   slack/notify:
     channel: C03DAJYL3SM
@@ -178,9 +182,11 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            EC2IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text >> ~/project/.circleci/ansible/inventory.txt
+              --output text)
+            echo "EC2 IP ADDRESS: ${EC2IP}"
+            echo "${EC2IP}" >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
@@ -191,12 +197,16 @@ jobs:
           frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   # configure-infrastructure:
-  #   docker:
-  #     # Docker image here that supports Ansible
+  #   <<: *os_ansible_supported
   #   steps:
   #     # Checkout code from git
+  #     - checkout
   #     # Add ssh keys with fingerprint
+  #     - add_ssh_keys:
+  #         fingerprints: ["${SSH_FINGERPRINT}"]
   #     # attach workspace
+  #     - attach_workspace:
+  #         at: ~/
   #     - run:
   #         name: Install dependencies
   #         command: |
@@ -207,7 +217,7 @@ jobs:
   #         command: |
   #           # Your code here
   #           exit 1
-  #     # Here's where you will add some code to rollback on failure
+  # Here's where you will add some code to rollback on failure
 
   # run-migrations:
   #   docker:
