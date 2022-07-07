@@ -124,7 +124,6 @@ jobs:
 
   scan-backend:
     <<: *os_default
-    context: buildbot-for-cicd-project
     steps:
       - checkout
       - restore_cache:
@@ -317,6 +316,7 @@ workflows:
       - test-backend:
           requires: [build-backend]
       - scan-backend:
+          context: buildbot-for-cicd-project
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
