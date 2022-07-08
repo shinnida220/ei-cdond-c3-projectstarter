@@ -34,9 +34,12 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
+            echo "Destroying environment: << parameters.backendStackName >> "
             aws cloudformation delete-stack \
               --stack-name << parameters.backendStackName >> \
               --region us-east-1
+
+            echo "Destroying environment: << parameters.backendStackName >> "              
             aws cloudformation delete-stack \
               --stack-name << parameters.frontendStackName >> \
               --region us-east-1
@@ -218,60 +221,106 @@ jobs:
           backendStackName: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
           frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
-  # run-migrations:
-  #   docker:
-  #     # Docker image here that supports NodeJS
-  #   steps:
-  #     # Checkout code from git
-  #     - run:
-  #         name: Run migrations
-  #         command: |
-  #           # Your code here
-  #           exit 1
-  #     - run:
-  #         name: Send migration results to memstash
-  #         command: |
-  #           # Your code here
-  #           exit 1
-  #     # Here's where you will add some code to rollback on failure
+  run-migrations:
+    <<: *os_default
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            # Run and save the migration output
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration results to ThisDb key-value store
+          command: |
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            then
+              # If you are using memstash.io, generate the token "7933fe63-4687-4fa1-8426-aa25aa1730ec" on the website
+              # curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+              # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
+              # curl https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+              curl "https://api.thisdb.com/v1/eQLBWGnFryR8JuM1IZ6cqxpO/migration_${CIRCLE_WORKFLOW_ID:0:7}" -H "X-Api-Key: 15d48f9b51bc8d1fea7c6f0bb9cb4663d1931b34" -d 'Success'
+            fi
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          backendStackName: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
-  # deploy-frontend:
-  #   docker:
-  #     # Docker image here that supports AWS CLI
-  #   steps:
-  #     # Checkout code from git
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # your code here
-  #     - run:
-  #         name: Get backend url
-  #         command: |
-  #           # your code here
-  #           export API_URL="http://${BACKEND_IP}:3030"
-  #           echo "${API_URL}"
-  #     - run:
-  #         name: Deploy frontend objects
-  #         command: |
-  #           # your code here
-  #     # Here's where you will add some code to rollback on failure
+  deploy-frontend:
+    <<: *os_aws_image
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install tar & gzip
+          command: |
+            yum install -y tar gzip
+      - run:
+          name: Install dependencies Nodes & NPM
+          command: |
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+            ~/.nvm/nvm.sh
+            nvm install 13.8.0
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            # your code here
+            cd frontend
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          backendStackName: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
-  # deploy-backend:
-  #   docker:
-  #     # Docker image here that supports Ansible
-  #   steps:
-  #     # Checkout code from git
-  #     # Add ssh keys with fingerprint
-  #     # attach workspace
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # your code here
-  #     - run:
-  #         name: Deploy backend
-  #         command: |
-  #           # your code here
-  #     # Here's where you will add some code to rollback on failure
+  deploy-backend:
+    <<: *os_ansible_supported
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["${SSH_FINGERPRINT}"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies Ansible, tar
+          command: |
+            apk add --update ansible tar
+      - run:
+          name: Deploy backend
+          command: |
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            # Lets see what we have here..
+            ls -lh
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          backendStackName: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   # smoke-test:
   #   docker:
