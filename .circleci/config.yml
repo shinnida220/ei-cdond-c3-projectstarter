@@ -196,28 +196,27 @@ jobs:
           backendStackName: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
           frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
-  # configure-infrastructure:
-  #   <<: *os_ansible_supported
-  #   steps:
-  #     # Checkout code from git
-  #     - checkout
-  #     # Add ssh keys with fingerprint
-  #     - add_ssh_keys:
-  #         fingerprints: ["${SSH_FINGERPRINT}"]
-  #     # attach workspace
-  #     - attach_workspace:
-  #         at: ~/
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # Your code here
-  #           exit 1
-  #     - run:
-  #         name: Configure server
-  #         command: |
-  #           # Your code here
-  #           exit 1
-  # Here's where you will add some code to rollback on failure
+  configure-infrastructure:
+    <<: *os_ansible_supported
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["${SSH_FINGERPRINT}"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies (Ansible)
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          backendStackName: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   # run-migrations:
   #   docker:
@@ -350,8 +349,8 @@ workflows:
       #     filters:
       #       branches:
       #         only: [test-feature-branch]
-      # - configure-infrastructure:
-      #     requires: [deploy-infrastructure]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
       # - deploy-frontend:

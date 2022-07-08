@@ -1,0 +1,37 @@
+---
+- name: "Update Apt Packages"
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: "Upgrade Packages"
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: Install dependencies, Python
+  become: true
+  apt:
+    name: ["python3"]
+    state: present
+    update_cache: yes
+
+- name: Install dependencies, such as NodeJS and NPM
+  become: true
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
+
+- name: "Install PM2"
+  become: yes
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
+
+- name: "Remove dependencies no longer required"
+  become: yes
+  apt:
+    autoremove: yes
