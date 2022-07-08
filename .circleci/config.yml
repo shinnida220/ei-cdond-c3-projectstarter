@@ -210,7 +210,7 @@ jobs:
       - run:
           name: Install dependencies (Ansible)
           command: |
-            apk add --update ansible
+            apk add --update ansible aws-cli
       - run:
           name: Configure server
           command: |
@@ -222,11 +222,17 @@ jobs:
           frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   run-migrations:
-    <<: *os_default
+    <<: *os_aws_image
     steps:
       - checkout
       - restore_cache:
           keys: [backend-build]
+      - run: Setup dependencies
+          name: Install Node & NPM
+          shell: |
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+            ~/.nvm/nvm.sh
+            nvm install 13.8.0
       - run:
           name: Run migrations
           command: |
@@ -299,9 +305,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Install dependencies Ansible, tar
+          name: Install dependencies Ansible, tar, AWSCLI
           command: |
-            apk add --update ansible tar
+            apk add --update ansible tar aws-cli
       - run:
           name: Deploy backend
           command: |
