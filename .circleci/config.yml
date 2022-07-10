@@ -267,12 +267,14 @@ jobs:
     <<: *os_ansible_supported
     steps:
       - checkout
+      - run: apk add --update tar gzip
       - attach_workspace:
           at: ~/
       - run:
           name: Install dependencies Node, tar, AWSCLI
           command: |
-            apk add --update --no-cache tar gzip curl nodejs npm tree aws-cli
+            # apk add --update --no-cache tar gzip curl nodejs npm tree aws-cli
+            apk add nodejs npm
       - run:
           name: Get backend url
           command: |
@@ -303,14 +305,22 @@ jobs:
     <<: *os_ansible_supported
     steps:
       - checkout
+      - run: apk add --update tar gzip
       - add_ssh_keys:
           fingerprints: ["${SSH_FINGERPRINT}"]
       - attach_workspace:
           at: ~/
+      # - run:
+      #     name: Install dependencies Ansible, tar, AWSCLI, NPM
+      #     command: |
+      #       apk add --update --no-cache tar gzip ansible curl nodejs npm tree aws-cli
       - run:
-          name: Install dependencies Ansible, tar, AWSCLI, NPM
+          name: Install dependencies (Ansible)
           command: |
-            apk add --update --no-cache tar gzip ansible curl nodejs npm tree aws-cli
+            apk add ansible nodejs npm
+            pip install awscli
+            # Lets check the version
+            aws --version
       - run:
           name: Deploy backend
           command: |
