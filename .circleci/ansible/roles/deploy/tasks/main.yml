@@ -3,7 +3,7 @@
   file:
     path: "/var/www/backend"
     state: directory
-    mode: 0755
+    mode: 0644
 
 - name: Copy the zipped artifact
   become: yes
