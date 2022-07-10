@@ -17,7 +17,7 @@
     update_cache: yes
 
 - name: Install dependencies, such as NodeJS and NPM
-  become: true
+  become: yes
   apt:
     name: ["nodejs", "npm"]
     state: latest
