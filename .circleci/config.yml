@@ -249,6 +249,7 @@ jobs:
             then
               echo "$FILE exists."
             fi
+            tail "$FILE"
       - run:
           name: Send migration results to ThisDb key-value store
           command: |
