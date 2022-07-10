@@ -2,7 +2,7 @@
 - name: Creating the directory to copy artifact to
   become: yes
   file:
-    path: "/var/www/backend"
+    path: "/var/www"
     state: directory
     mode: 0644
 
@@ -12,14 +12,21 @@
     src: "files/artifact.tar.gz"
     dest: /var/www/artifact.tar.gz
 
+# - name: Extract zipped artifact
+#   become: yes
+#   shell: |
+#     tar xvf /var/www/artifact.tar.gz
+
 - name: Extract zipped artifact
-  become: yes
-  shell: |
-    tar xvf /var/www/artifact.tar.gz
+  unarchive:
+    src: /var/www/artifact.tar.gz
+    dest: /var/www/
+    remote_src: True
 
 - name: Start Backend Application
+  become: yes
   shell: |
-    cd backend
+    cd /var/www/backend
     npm install
     pm2 stop default
     pm2 start npm -- start
