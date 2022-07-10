@@ -39,7 +39,10 @@ commands:
               --stack-name << parameters.backendStackName >> \
               --region us-east-1
 
-            echo "Destroying environment: << parameters.backendStackName >> "              
+            echo "Destroying environment: << parameters.frontendStackName >> "  
+            echo "First emptying the s3 bucket content"
+            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+
             aws cloudformation delete-stack \
               --stack-name << parameters.frontendStackName >> \
               --region us-east-1
