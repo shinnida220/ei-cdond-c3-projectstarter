@@ -10,7 +10,7 @@
     upgrade: yes
 
 - name: Install dependencies, Python
-  become: true
+  become: yes
   apt:
     name: ["python3"]
     state: present

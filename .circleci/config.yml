@@ -230,18 +230,19 @@ jobs:
           frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   run-migrations:
-    <<: *os_aws_image
+    <<: *os_default
     steps:
       - checkout
       - restore_cache:
           keys: [backend-build]
-      - run:
-          name: Install Node & NPM
-          command: |
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
-            ~/.nvm/nvm.sh
-            nvm install 13.8.0
-
+      # - run:
+      #     name: Install Node & NPM
+      #     command: |
+      #       curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+      #       # Since I am not sure which the aws cli uses..
+      #       touch ~/.bash_profile
+      #       sudo ~/.nvm/nvm.sh
+      #       nvm install 13.8.0
       - run:
           name: Run migrations
           command: |
