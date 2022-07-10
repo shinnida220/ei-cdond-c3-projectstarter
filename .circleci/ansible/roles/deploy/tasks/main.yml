@@ -6,9 +6,9 @@
     state: directory
     mode: 0644
 
-- block:
-    tags:
-      - checksum
+- name: Copy operation
+  tags: checksum
+  block:
     - name: Checksum of original file
       stat:
         path: files/artifact.tar.gz
