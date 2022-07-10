@@ -272,15 +272,16 @@ jobs:
     <<: *os_aws_image
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install tar & gzip
           command: |
             yum install -y tar gzip
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies Nodes & NPM
           command: |
+            touch ~/.bash_profile
             curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
             ~/.nvm/nvm.sh
             nvm install 13.8.0
