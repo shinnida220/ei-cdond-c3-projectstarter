@@ -267,7 +267,7 @@ jobs:
     <<: *os_ansible_supported
     steps:
       - checkout
-      - run: apk add --update tar gzip
+      - run: apk add --update tar gzip curl
       - attach_workspace:
           at: ~/
       - run:
@@ -308,7 +308,7 @@ jobs:
     <<: *os_ansible_supported
     steps:
       - checkout
-      - run: apk add --update tar gzip
+      - run: apk add --update tar gzip curl
       - add_ssh_keys:
           fingerprints: ["${SSH_FINGERPRINT}"]
       - attach_workspace:
