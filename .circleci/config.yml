@@ -57,11 +57,8 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            # lets see all the variables.
-            echo "${THISDB_BUCKET} migration_<< parameters.workflowID >>  ${THISDB_ACCESS_KEY}"
-
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl --insecure "https://api.thisdb.com/v1/${THISDB_BUCKET}/migration_<< parameters.workflowID >>" -H "X-Api-Key: ${THISDB_ACCESS_KEY}")
+            SUCCESS=$(curl --insecure "https://api.thisdb.com/v1/eQLBWGnFryR8JuM1IZ6cqxpO/migration_<< parameters.workflowID >>" -H "X-Api-Key: 15d48f9b51bc8d1fea7c6f0bb9cb4663d1931b34")
             if(( $SUCCESS=='SUCCESS' )); 
             then
               cd ~/project/backend
@@ -250,9 +247,7 @@ jobs:
           command: |
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
-              # lets see the varibales
-              echo "${THISDB_BUCKET} | ${CIRCLE_WORKFLOW_ID:0:7} | ${THISDB_ACCESS_KEY}"
-              curl --insecure "https://api.thisdb.com/v1/${THISDB_BUCKET}/migration_${CIRCLE_WORKFLOW_ID:0:7}" -H "X-Api-Key: ${THISDB_ACCESS_KEY}" -d 'SUCCESS'
+              curl --insecure "https://api.thisdb.com/v1/eQLBWGnFryR8JuM1IZ6cqxpO/migration_${CIRCLE_WORKFLOW_ID:0:7}" -H "X-Api-Key: 15d48f9b51bc8d1fea7c6f0bb9cb4663d1931b34" -d 'SUCCESS'
             fi
 
       # Here's where you will add some code to rollback on failure
