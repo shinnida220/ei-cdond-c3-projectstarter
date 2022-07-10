@@ -58,13 +58,13 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl --insecure "https://api.thisdb.com/v1/eQLBWGnFryR8JuM1IZ6cqxpO/migration_<< parameters.workflowID >>" -H "X-Api-Key: 15d48f9b51bc8d1fea7c6f0bb9cb4663d1931b34")
-            if(( $SUCCESS=='SUCCESS' )); 
-            then
+            #SUCCESS=$(curl --insecure "https://api.thisdb.com/v1/eQLBWGnFryR8JuM1IZ6cqxpO/migration_<< parameters.workflowID >>" -H "X-Api-Key: 15d48f9b51bc8d1fea7c6f0bb9cb4663d1931b34")
+            #if(( $SUCCESS=='SUCCESS' )); 
+            #then
               cd ~/project/backend
               npm install
               npm run migrate:revert
-            fi
+            #fi
 
 jobs:
   build-frontend:
