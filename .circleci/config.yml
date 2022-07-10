@@ -259,22 +259,15 @@ jobs:
           frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   deploy-frontend:
-    <<: *os_aws_image
+    <<: *os_ansible_supported
     steps:
       - checkout
-      - run:
-          name: Install tar & gzip
-          command: |
-            yum install -y tar gzip
       - attach_workspace:
           at: ~/
       - run:
-          name: Install dependencies Nodes & NPM
+          name: Install dependencies Node, tar, AWSCLI
           command: |
-            touch ~/.bash_profile
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
-            sudo ~/.nvm/nvm.sh
-            nvm install 13.8.0
+            apk add --update --no-cache tar gzip curl nodejs npm tree aws-cli
       - run:
           name: Get backend url
           command: |
@@ -310,9 +303,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Install dependencies Ansible, tar, AWSCLI
+          name: Install dependencies Ansible, tar, AWSCLI, NPM
           command: |
-            apk add --update ansible tar aws-cli
+            apk add --update --no-cache tar gzip ansible curl nodejs npm tree aws-cli
       - run:
           name: Deploy backend
           command: |
@@ -329,6 +322,8 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure
+      - revert-migrations:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
           backendStackName: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
           frontendStackName: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
