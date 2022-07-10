@@ -205,12 +205,17 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["${SSH_FINGERPRINT}"]
+      - run: apk add --update tar gzip
       - attach_workspace:
           at: ~/
       - run:
           name: Install dependencies (Ansible)
           command: |
-            apk add --update --no-cache tar gzip curl zip gcompat ansible aws-cli
+            apk add ansible
+            pip install awscli
+            # Lets check the version
+            aws --version
+
       # - run: apk add gcompat
       # - run:
       #     name: Setup AWS CLI
