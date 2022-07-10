@@ -57,6 +57,9 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
+            # lets see all the variables.
+            echo "${THISDB_BUCKET} migration_<< parameters.workflowID >>  ${THISDB_ACCESS_KEY}"
+
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --insecure "https://api.thisdb.com/v1/${THISDB_BUCKET}/migration_<< parameters.workflowID >>" -H "X-Api-Key: ${THISDB_ACCESS_KEY}")
             if(( $SUCCESS=='SUCCESS' )); 
@@ -218,15 +221,6 @@ jobs:
             pip install awscli
             # Lets check the version
             aws --version
-
-      # - run: apk add gcompat
-      # - run:
-      #     name: Setup AWS CLI
-      #     command: |
-      #       AWS_CLI_VER=2.0.30
-      #       apk update && apk add --no-cache curl gcompat zip &&  \
-      #       curl -s https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VER}.zip -o awscliv2.zip && \
-      #       unzip awscliv2.zip && ./aws/install
       - run:
           name: Configure server
           command: |
@@ -256,6 +250,8 @@ jobs:
           command: |
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
+              # lets see the varibales
+              echo "${THISDB_BUCKET} | ${CIRCLE_WORKFLOW_ID:0:7} | ${THISDB_ACCESS_KEY}"
               curl --insecure "https://api.thisdb.com/v1/${THISDB_BUCKET}/migration_${CIRCLE_WORKFLOW_ID:0:7}" -H "X-Api-Key: ${THISDB_ACCESS_KEY}" -d 'SUCCESS'
             fi
 
@@ -316,10 +312,6 @@ jobs:
           fingerprints: ["${SSH_FINGERPRINT}"]
       - attach_workspace:
           at: ~/
-      # - run:
-      #     name: Install dependencies Ansible, tar, AWSCLI, NPM
-      #     command: |
-      #       apk add --update --no-cache tar gzip ansible curl nodejs npm tree aws-cli
       - run:
           name: Install dependencies (Ansible)
           command: |
