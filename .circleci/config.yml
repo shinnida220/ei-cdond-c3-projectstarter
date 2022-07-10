@@ -275,6 +275,9 @@ jobs:
           command: |
             # apk add --update --no-cache tar gzip curl nodejs npm tree aws-cli
             apk add nodejs npm
+            pip install awscli
+            # Lets check the version
+            aws --version
       - run:
           name: Get backend url
           command: |
