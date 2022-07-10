@@ -20,8 +20,12 @@
       copy:
         src: files/artifact.tar.gz
         dest: /var/www/artifact.tar.gz
-        checksum:
       register: copy_out
+
+    - name: Trying to debug vars
+      shell: |
+        echo "{{ copy_out }}"
+        echo "{{ src_info }}"
 
     - name: Fail if copy was a failure
       fail:
