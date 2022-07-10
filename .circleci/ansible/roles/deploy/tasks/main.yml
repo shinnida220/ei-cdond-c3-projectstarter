@@ -28,7 +28,7 @@
 #     tar xvf /var/www/artifact.tar.gz
 
 - name: Extract zipped artifact
-  become yes
+  become: yes
   unarchive:
     src: /var/www/artifact.tar.gz
     dest: /var/www/
