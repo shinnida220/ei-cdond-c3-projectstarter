@@ -6,11 +6,28 @@
     state: directory
     mode: 0644
 
-- name: Copy the zipped artifact
-  become: yes
-  copy:
-    src: "files/artifact.tar.gz"
-    dest: /var/www/artifact.tar.gz
+- block:
+    - name: Checksum of original file
+      stat:
+        path: files/artifact.tar.gz
+        checksum_algorithm: sha1
+      register: src_info
+
+    - name: Copy the zipped artifact
+      become: yes
+      copy:
+        src: files/artifact.tar.gz
+        dest: /var/www/artifact.tar.gz
+      register: copy_out
+
+    - name: Fail if copy was a failure
+      fail:
+        msg: "File Copy failed!"
+      when: src_info.stat.checksum != copy_out.checksum
+
+    - name: Print Copy successful
+      debug:
+        msg: "File copy Successful!"
 
 # - name: Extract zipped artifact
 #   become: yes
