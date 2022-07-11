@@ -468,7 +468,7 @@ jobs:
           command: |
             # Retrieve the old workflow-id
             export OLDWORKFLOWID=$(aws cloudformation \
-              list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
               --no-paginate --output text)
             echo "$OLDWORKFLOWID" >> ~/oldWorkflowId.txt
             cat ~/oldWorkflowId.txt
