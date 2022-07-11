@@ -476,7 +476,7 @@ jobs:
             # Change the initial stack name, as applicable to you
             aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
-              --stack-name udapeopleCloudfrontDistStack \
+              --stack-name udapeopleStack \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
 
@@ -506,7 +506,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Get old stack workflow id
+          name: Get old stack workflow id & delete old stacks
           command: |
             # your code here
             export OldWorkflowID=$(cat ~/oldWorkflowId.txt)
@@ -519,21 +519,21 @@ jobs:
             export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
               --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
             echo Stack names: "${STACKS[@]}"
-      - run:
-          name: Remove old stacks and files
-          command: |
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+
+            if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
               # your code here
               echo "------ Starting cleanup of old stack - ${STACKS[@]} ------"
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
 
+              echo "------ deleting frontend stack (if any) ------"
               aws cloudformation delete-stack \
-                --stack-name udapeople-frontend-${OldWorkflowID} >> \
+                --stack-name udapeople-frontend-${OldWorkflowID} \
                 --region us-east-1
 
+              echo "------ deleting backend stack (if any) ------"
               aws cloudformation delete-stack \
-                --stack-name udapeople-backend-${OldWorkflowID} >> \
+                --stack-name udapeople-backend-${OldWorkflowID} \
                 --region us-east-1
               
               echo "------ Cleanup of old stack - ${STACKS[@]} completed ------"

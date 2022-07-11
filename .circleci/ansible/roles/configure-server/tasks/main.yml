@@ -1,13 +1,13 @@
 ---
-- name: "Update Apt Packages"
-  become: yes
-  apt:
-    update_cache: yes
+# - name: "Update Apt Packages"
+#   become: yes
+#   apt:
+#     update_cache: yes
 
-- name: "Upgrade Packages"
-  become: yes
-  apt:
-    upgrade: yes
+# - name: "Upgrade Packages"
+#   become: yes
+#   apt:
+#     upgrade: yes
 
 - name: Install dependencies, Python
   become: yes
