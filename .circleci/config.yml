@@ -328,18 +328,19 @@ jobs:
           command: |
             cd backend
             touch .env
-            cat <<EOT >> .env
-            TYPEORM_CONNECTION=postgres
-            TYPEORM_MIGRATIONS_DIR=./src/migrations
-            TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts
-            TYPEORM_MIGRATIONS=./src/migrations/*.ts
+
+            echo "TYPEORM_CONNECTION=postgres" >> .env
+            echo "TYPEORM_MIGRATIONS_DIR=./src/migrations" >> .env
+            echo "TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts" >> .env
+            echo "TYPEORM_MIGRATIONS=./src/migrations/*.ts" >> .env
+
             # Use these values for the local PG database from the Docker Compose file
-            TYPEORM_HOST="${TYPEORM_HOST}"
-            TYPEORM_PORT="${TYPEORM_PORT}"
-            TYPEORM_USERNAME="${TYPEORM_USERNAME}"
-            TYPEORM_PASSWORD="${TYPEORM_PASSWORD}"
-            TYPEORM_DATABASE="${TYPEORM_DATABASE}"
-            EOT
+            echo "TYPEORM_HOST=${TYPEORM_HOST}"  >> .env
+            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> .env
+            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> .env
+            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> .env
+            echo "TYPEORM_DATABASE="${TYPEORM_DATABASE}" >> .env
+            cat .env
 
       - run:
           name: Deploy backend
