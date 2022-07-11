@@ -37,6 +37,7 @@
 - name: Start Backend Application
   become: yes
   shell: |
+    chmod a+rwx /var/www
     cd /var/www
     npm install
     pm2 stop default

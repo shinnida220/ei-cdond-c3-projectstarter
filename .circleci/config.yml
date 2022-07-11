@@ -324,6 +324,26 @@ jobs:
             # Lets check the version
             aws --version
       - run:
+          name: Create env file
+          command: |
+            cd backend
+            touch .env
+            cat <<EOT >> .env
+
+            TYPEORM_CONNECTION=postgres
+            TYPEORM_MIGRATIONS_DIR=./src/migrations
+            TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts
+            TYPEORM_MIGRATIONS=./src/migrations/*.ts
+
+            # Use these values for the local PG database from the Docker Compose file
+            TYPEORM_HOST="${TYPEORM_HOST}"
+            TYPEORM_PORT="${TYPEORM_PORT}"
+            TYPEORM_USERNAME="${TYPEORM_USERNAME}"
+            TYPEORM_PASSWORD=${TYPEORM_PASSWORD}
+            TYPEORM_DATABASE=${TYPEORM_DATABASE}
+
+            EOT
+      - run:
           name: Deploy backend
           command: |
             cd backend
