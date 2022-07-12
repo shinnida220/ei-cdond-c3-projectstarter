@@ -55,16 +55,16 @@ commands:
     steps:
       - run:
           name: Revert migrations
-          when: on_fail
+          #when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl --insecure "https://api.thisdb.com/v1/eQLBWGnFryR8JuM1IZ6cqxpO/migration_<< parameters.workflowID >>" -H "X-Api-Key: 15d48f9b51bc8d1fea7c6f0bb9cb4663d1931b34")
-            if [[ $SUCCESS == 'SUCCESS' ]] 
-            then
+            #SUCCESS=$(curl --insecure "https://api.thisdb.com/v1/eQLBWGnFryR8JuM1IZ6cqxpO/migration_<< parameters.workflowID >>" -H "X-Api-Key: 15d48f9b51bc8d1fea7c6f0bb9cb4663d1931b34")
+            #if [[ $SUCCESS == 'SUCCESS' ]] 
+            #then
               cd ~/project/backend
               npm install
               npm run migrations:revert
-            fi
+            #fi
 
 jobs:
   build-frontend:
@@ -143,7 +143,7 @@ jobs:
           paths: [frontend/node_modules]
           key: frontend-build
 
-  scan-backend:
+  scan-backend-old:
     <<: *os_default
     steps:
       - checkout
@@ -162,6 +162,34 @@ jobs:
           paths: [backend/node_modules]
           key: backend-build
       # - <<: *notify_channel_for_error
+
+  scan-backend:
+    <<: *os_ansible_supported
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Install Depencies (NPM, AWS)
+          command: |
+            apk add --update tar gzip curl nodejs npm
+            pip install awscli
+            aws --version
+      - run:
+          name: Scan Backend Dependencies
+          command: |
+            cd backend
+            npm install
+            npm audit fix --audit-level=critical
+            npm audit fix --force
+            # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
+            npm audit --audit-level=critical
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
+      # - <<: *notify_channel_for_error
+      - revert-migrations:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-infrastructure:
     <<: *os_aws_image
@@ -544,24 +572,24 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
+      # - build-frontend
       - build-backend
-      - test-frontend:
-          requires: [build-frontend]
+      # - test-frontend:
+      #     requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
       - scan-backend:
           context: buildbot-for-cicd-project
           requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
+      # - scan-frontend:
+      #     requires: [build-frontend]
+      # - deploy-infrastructure:
+      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     filters:
+      #       branches:
+      #         only: [master]
+      # - configure-infrastructure:
+      #     requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
       # - deploy-frontend:
