@@ -175,17 +175,15 @@ jobs:
             apk add --update tar gzip curl nodejs npm
             pip install awscli
             aws --version
-      - run:
-          name: Scan Backend Dependencies
-          command: |
-            cd backend
-            npm install
-            npm audit fix --audit-level=critical
-            npm audit fix --force
-            # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            npm audit --audit-level=critical
-
-            npm run build
+      # - run:
+      #     name: Scan Backend Dependencies
+      #     command: |
+      #       cd backend
+      #       npm install
+      #       npm audit fix --audit-level=critical
+      #       npm audit fix --force
+      #       # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
+      #       npm audit --audit-level=critical
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
