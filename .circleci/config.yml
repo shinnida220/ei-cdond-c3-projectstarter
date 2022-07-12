@@ -184,6 +184,8 @@ jobs:
             npm audit fix --force
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             npm audit --audit-level=critical
+
+            npm run build
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
